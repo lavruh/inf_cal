@@ -44,8 +44,8 @@ class _InfCalState extends State<InfCal> {
           controller.scrollCalendar(details.focalPointDelta.dy);
         },
         onScaleEnd: (details) {
-          controller.currentDate = controller.firstDateOnScreen;
-          controller.dayEntryHeight *= controller.scaleFactor;
+          controller.currentDate = controller.firstEntryOnScreen;
+          controller.entryHeight *= controller.scaleFactor;
           controller.scaleFactor = 1.0;
           controller.scroll = 0.0;
           _rebuild();

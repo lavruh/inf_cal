@@ -4,17 +4,17 @@ import 'package:inf_cal/utils/date_extension.dart';
 import 'package:intl/intl.dart';
 
 class InfCalController extends ChangeNotifier {
-  double dayEntryHeight = 50.0;
+  double entryHeight = 50.0;
   double widgetWidth = 100.0;
   double scroll = 0.0;
   List<Widget> viewBuffer = [];
-  int datesPerScreen = 0;
-  DateTime? dateStartView;
-  DateTime? dateEndView;
+  int entriesPerScreen = 0;
+  DateTime? bufferStart;
+  DateTime? bufferEnd;
   DateTime currentDate = DateTime.now();
   double scaleFactor = 1.0;
-  int viewStartOffsetDays = 0;
-  DateTime firstDateOnScreen = DateTime.now();
+  int viewStartOffsetEntries = 0;
+  DateTime firstEntryOnScreen = DateTime.now();
 
   void scrollCalendar(double offset) {
     scroll += offset;
@@ -27,20 +27,20 @@ class InfCalController extends ChangeNotifier {
   }
 
   void determinateViewPortDatesLimits({required BuildContext context}) {
-    datesPerScreen = MediaQuery.of(context).size.height ~/ dayEntryHeight;
-    viewStartOffsetDays = -datesPerScreen;
-    dateStartView = currentDate.add(Duration(days: viewStartOffsetDays));
-    dateEndView = currentDate.add(Duration(days: datesPerScreen * 2));
+    entriesPerScreen = MediaQuery.of(context).size.height ~/ entryHeight;
+    viewStartOffsetEntries = -entriesPerScreen;
+    bufferStart = currentDate.add(Duration(days: viewStartOffsetEntries));
+    bufferEnd = currentDate.add(Duration(days: entriesPerScreen * 2));
     widgetWidth = MediaQuery.of(context).size.width;
   }
 
   List<Widget> updateView() {
     List<Widget> viewBuffer = [];
-    final start = dateStartView;
-    final end = dateEndView;
+    final start = bufferStart;
+    final end = bufferEnd;
     DateTime? titleBarDate;
-    final scaledHeight = dayEntryHeight * scaleFactor;
-    final viewStartOffset = viewStartOffsetDays * scaledHeight;
+    final scaledHeight = entryHeight * scaleFactor;
+    final viewStartOffset = viewStartOffsetEntries * scaledHeight;
     int i = 0;
 
     if (start == null || end == null) return [];
@@ -51,7 +51,7 @@ class InfCalController extends ChangeNotifier {
       final p = scroll + viewStartOffset + i * scaledHeight;
 
       if (p + scaledHeight > 0 && p <= scaledHeight) {
-        firstDateOnScreen = d;
+        firstEntryOnScreen = d;
       }
 
       viewBuffer.add(generateCrossFlowItem(
@@ -102,19 +102,19 @@ class InfCalController extends ChangeNotifier {
     AlignmentGeometry? alignment,
     Color? color,
   }) {
-    final viewStartDate = dateStartView!;
+    final viewStartDate = bufferStart!;
     final start =
     startDate.millisecondsSinceEpoch > viewStartDate.millisecondsSinceEpoch
         ? startDate
         : viewStartDate;
-    final viewEndDate = dateEndView!;
+    final viewEndDate = bufferEnd!;
     final end =
     endDate.microsecondsSinceEpoch < viewEndDate.microsecondsSinceEpoch
         ? endDate
         : viewEndDate;
 
-    final scaledHeight = dayEntryHeight * scaleFactor;
-    final viewStartOffset = viewStartOffsetDays * scaledHeight;
+    final scaledHeight = entryHeight * scaleFactor;
+    final viewStartOffset = viewStartOffsetEntries * scaledHeight;
 
     final daysDiff = start.difference(viewStartDate).inDays;
     final topPosition =
