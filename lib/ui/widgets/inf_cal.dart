@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:inf_cal/domain/inf_cal_controller.dart';
-import 'package:inf_cal/utils/widgets/mouse_scroll_detector.dart';
+import 'package:inf_cal/utils/widgets/keyboard_and_mouse_event_detector.dart';
 
 class InfCal extends StatefulWidget {
   const InfCal({super.key, required this.controller});
@@ -34,8 +33,11 @@ class _InfCalState extends State<InfCal> {
   Widget build(BuildContext context) {
     controller.determinateViewPortDatesLimits(context: context);
 
-    // _updateView();
-    return MouseScrollDetector(
+    return KeyboardAndMouseEventDetector(
+      onScroll: (d) {
+        print(d);
+      },
+      onCtrlKey: (b) => controller.zoomMode = b,
       child: GestureDetector(
         onScaleUpdate: (details) {
           if (details.scale != 1.0) {
@@ -44,17 +46,13 @@ class _InfCalState extends State<InfCal> {
           controller.scrollCalendar(details.focalPointDelta.dy);
         },
         onScaleEnd: (details) {
-          controller.currentDate = controller.firstEntryOnScreen;
-          controller.entryHeight *= controller.scaleFactor;
-          controller.scaleFactor = 1.0;
-          controller.scroll = 0.0;
+          controller.updateControllerValues();
           _rebuild();
         },
         child: Stack(
           children: controller.updateView(),
         ),
       ),
-      onScroll: (event) => controller.scrollCalendar(event.scrollDelta.dy),
     );
   }
 }

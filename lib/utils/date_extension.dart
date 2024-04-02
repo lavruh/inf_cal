@@ -25,7 +25,7 @@ extension IsSameDate on DateTime {
 
   int weekNumber() {
     int dayOfYear = int.parse(DateFormat("D").format(this));
-    int woy =  ((dayOfYear - weekday + 10) / 7).floor();
+    int woy = ((dayOfYear - weekday + 10) / 7).floor();
     if (woy < 1) {
       woy = numOfWeeks(year - 1);
     } else if (woy > numOfWeeks(year)) {
