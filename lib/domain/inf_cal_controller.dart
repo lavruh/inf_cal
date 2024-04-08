@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:inf_cal/domain/calendar_group.dart';
+import 'package:inf_cal/domain/scale_level.dart';
 import 'package:inf_cal/utils/date_extension.dart';
 import 'package:intl/intl.dart';
 
 class InfCalController extends ChangeNotifier {
+  List<CalendarGroup> calendarGroups = [];
   double _entryHeight = 20.0;
   double _widgetWidth = 100.0;
   double _scroll = 0.0;
@@ -13,7 +16,7 @@ class InfCalController extends ChangeNotifier {
   double _scaleFactor = 1.0;
   int _viewStartOffsetEntries = 0;
   DateTime _firstEntryOnScreen = DateTime.now();
-  ScaleLevel _scaleLevel = ScaleLevel.minutes;
+  ScaleLevel _scaleLevel = ScaleLevel.minutes();
   bool _zoomMode = false;
   double _mouseScale = 1;
   Duration _iteration = const Duration(minutes: 1);
@@ -46,15 +49,33 @@ class InfCalController extends ChangeNotifier {
     _entriesPerScreen = MediaQuery.of(context).size.height ~/ _entryHeight;
     _viewStartOffsetEntries = -_entriesPerScreen * 3;
     _bufferStart = _currentDate.add(_iteration * _viewStartOffsetEntries);
-    if (_scaleLevel != ScaleLevel.minutes) {
-      _bufferStart = _bufferStart?.copyWith(minute: 0, second: 0);
+    if (_scaleLevel != ScaleLevel.minutes()) {
+      _bufferStart = _bufferStart?.copyWith(
+          minute: 0, second: 0, millisecond: 0, microsecond: 0);
     }
-
     _bufferEnd = _currentDate.add(_iteration * _entriesPerScreen * 4);
     _widgetWidth = MediaQuery.of(context).size.width;
   }
 
   List<Widget> updateView() {
+    List<Widget> viewBuffer = [];
+    viewBuffer.addAll(_generateBackground());
+    for (final group in calendarGroups) {
+      for (final e in group.entries) {
+        viewBuffer.add(generateCrossFlowItem(
+          startDate: e.start,
+          endDate: e.end,
+          title: group.title,
+          crossDirectionSize: 30,
+          color: Colors.yellow,
+          crossDirectionOffset: group.offset,
+        ));
+      }
+    }
+    return viewBuffer;
+  }
+
+  List<Widget> _generateBackground() {
     List<Widget> viewBuffer = [];
     final start = _bufferStart;
     final end = _bufferEnd;
@@ -69,16 +90,16 @@ class InfCalController extends ChangeNotifier {
       final p = _scroll + viewStartOffset + i * scaledHeight;
       if (p + scaledHeight > 0 && p <= scaledHeight) _firstEntryOnScreen = d;
 
-      if (_scaleLevel == ScaleLevel.months) {
+      if (_scaleLevel == ScaleLevel.months()) {
         viewBuffer.addAll(_generateMonthsView(i, d));
       }
-      if (_scaleLevel == ScaleLevel.days) {
+      if (_scaleLevel == ScaleLevel.days()) {
         viewBuffer.addAll(_generateDaysView(i, d));
       }
-      if (_scaleLevel == ScaleLevel.hours) {
+      if (_scaleLevel == ScaleLevel.hours()) {
         viewBuffer.addAll(_generateHoursView(i, d));
       }
-      if (_scaleLevel == ScaleLevel.minutes) {
+      if (_scaleLevel == ScaleLevel.minutes()) {
         viewBuffer.addAll(_generateMinutesView(i, d));
       }
       i++;
@@ -138,26 +159,18 @@ class InfCalController extends ChangeNotifier {
         ));
   }
 
-  void switchScaleLevel(int i) {
-    final level = _scaleLevel.index;
-    if (level + i < 0 || level + i > ScaleLevel.values.length - 1) return;
-    _scaleLevel = ScaleLevel.values[_scaleLevel.index + i];
-    _entryHeight = 21.0;
-    if (_scaleLevel == ScaleLevel.days) _iteration = const Duration(days: 1);
-    if (_scaleLevel == ScaleLevel.hours) _iteration = const Duration(hours: 1);
-    if (_scaleLevel == ScaleLevel.minutes) {
-      _iteration = const Duration(minutes: 1);
-    }
-    updateControllerValues();
-  }
-
   void updateControllerValues() {
     _currentDate = _firstEntryOnScreen;
     _entryHeight *= _scaleFactor;
     _scaleFactor = 1.0;
     _scroll = 0.0;
-    if (_entryHeight < 20) switchScaleLevel(1);
-    if (_entryHeight > 100) switchScaleLevel(-1);
+    final oldScaleLevel = _scaleLevel.level;
+    _scaleLevel = _scaleLevel.changeScaleLevel(entrySize: _entryHeight);
+    if (_scaleLevel.level != oldScaleLevel) {
+      _entryHeight = _scaleLevel.entrySize;
+      _iteration = _scaleLevel.iterator;
+      updateControllerValues();
+    }
   }
 
   List<Widget> _generateMinutesView(int i, DateTime d) {
@@ -200,15 +213,17 @@ class InfCalController extends ChangeNotifier {
 
   List<Widget> _generateHoursView(int i, DateTime d) {
     List<Widget> viewBuffer = [];
-    viewBuffer.add(generateCrossFlowItem(
-      startDate: d,
-      endDate: d.add(_iteration),
-      title: DateFormat("HH:00").format(d),
-      crossDirectionSize: _widgetWidth,
-      crossDirectionOffset: 40,
-      alignment: Alignment.centerLeft,
-      color: i % 2 == 0 ? Colors.grey.shade50 : null,
-    ));
+    if (i == 0 || d.minute == 0) {
+      viewBuffer.add(generateCrossFlowItem(
+        startDate: d,
+        endDate: d.add(_iteration * 24),
+        title: DateFormat("HH:00").format(d),
+        crossDirectionSize: _widgetWidth,
+        crossDirectionOffset: 40,
+        alignment: Alignment.centerLeft,
+        color: i % 2 == 0 ? Colors.grey.shade50 : null,
+      ));
+    }
     if (i == 0 || (d.hour == 0 && d.minute == 0)) {
       viewBuffer.add(generateCrossFlowItem(
         startDate: d,
@@ -235,16 +250,18 @@ class InfCalController extends ChangeNotifier {
 
   List<Widget> _generateDaysView(int i, DateTime d) {
     List<Widget> viewBuffer = [];
-    viewBuffer.add(generateCrossFlowItem(
-      startDate: d,
-      endDate: d.add(const Duration(days: 1)),
-      title: DateFormat("EEE dd").format(d),
-      crossDirectionSize: _widgetWidth,
-      crossDirectionOffset: 70,
-      alignment: Alignment.centerLeft,
-      color: i % 2 == 0 ? Colors.grey.shade50 : null,
-    ));
-    if (i == 0 || d.day == 1) {
+    if (i == 0 || d.hour == 0) {
+      viewBuffer.add(generateCrossFlowItem(
+        startDate: d,
+        endDate: d.add(const Duration(days: 1)),
+        title: DateFormat("EEE dd").format(d),
+        crossDirectionSize: _widgetWidth,
+        crossDirectionOffset: 70,
+        alignment: Alignment.centerLeft,
+        color: i % 2 == 0 ? Colors.grey.shade50 : null,
+      ));
+    }
+    if (i == 0 || (d.day == 1 && d.hour == 0)) {
       viewBuffer.add(generateCrossFlowItem(
         startDate: d,
         endDate: d.addMonths(1),
@@ -254,7 +271,7 @@ class InfCalController extends ChangeNotifier {
         alignment: Alignment.center,
       ));
     }
-    if (i == 0 || d.weekday == 1) {
+    if (i == 0 || (d.weekday == 1 && d.hour == 0)) {
       viewBuffer.add(generateCrossFlowItem(
         startDate: d,
         endDate: d.add(const Duration(days: 6)),
@@ -306,5 +323,3 @@ class InfCalController extends ChangeNotifier {
     return viewBuffer;
   }
 }
-
-enum ScaleLevel { minutes, hours, days, months }

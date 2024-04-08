@@ -50,7 +50,10 @@ class _InfCalState extends State<InfCal> {
           _rebuild();
         },
         child: Stack(
-          children: controller.updateView(),
+          children: [
+            Container(color: Colors.white,),
+            ...controller.updateView(),
+          ],
         ),
       ),
     );
