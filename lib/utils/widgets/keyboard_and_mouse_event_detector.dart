@@ -19,7 +19,7 @@ class KeyboardAndMouseEventDetector extends StatelessWidget {
     return Listener(
       onPointerSignal: (e) {
         if (e is PointerScrollEvent) {
-          onScroll(e.delta);
+          onScroll(e.scrollDelta);
         }
       },
       child: Focus(

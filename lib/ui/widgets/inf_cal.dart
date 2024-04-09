@@ -34,9 +34,7 @@ class _InfCalState extends State<InfCal> {
     controller.determinateViewPortDatesLimits(context: context);
 
     return KeyboardAndMouseEventDetector(
-      onScroll: (d) {
-        print(d);
-      },
+      onScroll: (d) => controller.handleMouseScroll(d),
       onCtrlKey: (b) => controller.zoomMode = b,
       child: GestureDetector(
         onScaleUpdate: (details) {
@@ -46,12 +44,13 @@ class _InfCalState extends State<InfCal> {
           controller.scrollCalendar(details.focalPointDelta.dy);
         },
         onScaleEnd: (details) {
-          controller.updateControllerValues();
-          _rebuild();
+          controller.scrollFling(details.velocity.pixelsPerSecond.dy);
         },
         child: Stack(
           children: [
-            Container(color: Colors.white,),
+            Container(
+              color: Colors.white,
+            ),
             ...controller.updateView(),
           ],
         ),

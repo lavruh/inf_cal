@@ -18,7 +18,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     controller.calendarGroups = [
       CalendarGroup(200, title: "title", entries: [
-        CalendarEntry(start: DateTime(2024, 4, 1, 5, 20), end: DateTime(2024, 6, 2, 12, 0), title: "title")
+        CalendarEntry(
+            start: DateTime(2024, 4, 1, 5, 20),
+            end: DateTime(2024, 6, 2, 12, 0),
+            title: "title")
       ])
     ];
     return Scaffold(

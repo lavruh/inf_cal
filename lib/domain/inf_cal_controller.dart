@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:inf_cal/domain/calendar_group.dart';
 import 'package:inf_cal/domain/scale_level.dart';
@@ -6,6 +8,8 @@ import 'package:intl/intl.dart';
 
 class InfCalController extends ChangeNotifier {
   List<CalendarGroup> calendarGroups = [];
+  ScaleLevel _scaleLevel = ScaleLevel.minutes();
+  Duration _iteration = const Duration(minutes: 1);
   double _entryHeight = 20.0;
   double _widgetWidth = 100.0;
   double _scroll = 0.0;
@@ -16,10 +20,8 @@ class InfCalController extends ChangeNotifier {
   double _scaleFactor = 1.0;
   int _viewStartOffsetEntries = 0;
   DateTime _firstEntryOnScreen = DateTime.now();
-  ScaleLevel _scaleLevel = ScaleLevel.minutes();
   bool _zoomMode = false;
   double _mouseScale = 1;
-  Duration _iteration = const Duration(minutes: 1);
 
   bool get zoomMode => _zoomMode;
 
@@ -34,26 +36,55 @@ class InfCalController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void scrollFling(double velocity) {
+    double v = velocity;
+    if (v.abs() > 20) {
+      Timer.periodic(const Duration(milliseconds: 1), (timer) {
+        _scroll += v / 30;
+        v *= 0.9;
+        if (v.abs() < 0.2) {
+          timer.cancel();
+          updateControllerValues();
+        }
+        notifyListeners();
+      });
+    }
+    updateControllerValues();
+    notifyListeners();
+  }
+
   void scaleCalendar(double scale) {
     _scaleFactor = scale;
     notifyListeners();
   }
 
   void mouseScaleCalendar(double scale) {
-    if (scale > 0) _mouseScale += 0.1;
-    if (scale < 0) _mouseScale -= 0.1;
+    if (scale < 0) _mouseScale += 0.1;
+    if (scale > 0) _mouseScale -= 0.1;
     scaleCalendar(_mouseScale);
+  }
+
+  handleMouseScroll(Offset offset) {
+    final s = offset.dy;
+    if (zoomMode) {
+      mouseScaleCalendar(s);
+    } else {
+      scrollCalendar(s);
+    }
+    Timer(const Duration(milliseconds: 25), () {
+      updateControllerValues();
+    });
   }
 
   void determinateViewPortDatesLimits({required BuildContext context}) {
     _entriesPerScreen = MediaQuery.of(context).size.height ~/ _entryHeight;
-    _viewStartOffsetEntries = -_entriesPerScreen * 3;
+    _viewStartOffsetEntries = -_entriesPerScreen * 4;
     _bufferStart = _currentDate.add(_iteration * _viewStartOffsetEntries);
     if (_scaleLevel != ScaleLevel.minutes()) {
       _bufferStart = _bufferStart?.copyWith(
           minute: 0, second: 0, millisecond: 0, microsecond: 0);
     }
-    _bufferEnd = _currentDate.add(_iteration * _entriesPerScreen * 4);
+    _bufferEnd = _currentDate.add(_iteration * _entriesPerScreen * 5);
     _widgetWidth = MediaQuery.of(context).size.width;
   }
 
