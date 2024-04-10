@@ -7,7 +7,7 @@ import 'package:inf_cal/utils/date_extension.dart';
 import 'package:intl/intl.dart';
 
 class InfCalController extends ChangeNotifier {
-  List<CalendarGroup> calendarGroups = [];
+  List<CalendarGroup> calendarGroups;
   ScaleLevel _scaleLevel = ScaleLevel.minutes();
   Duration _iteration = const Duration(minutes: 1);
   double _entryHeight = 20.0;
@@ -22,6 +22,13 @@ class InfCalController extends ChangeNotifier {
   DateTime _firstEntryOnScreen = DateTime.now();
   bool _zoomMode = false;
   double _mouseScale = 1;
+  final _dataAreaStartOffset = 150;
+  final double padding;
+
+  InfCalController({
+    this.padding = 10,
+    this.calendarGroups = const <CalendarGroup>[],
+  });
 
   bool get zoomMode => _zoomMode;
 
@@ -91,19 +98,28 @@ class InfCalController extends ChangeNotifier {
   List<Widget> updateView() {
     List<Widget> viewBuffer = [];
     viewBuffer.addAll(_generateBackground());
+    final crossDirectSize = _getGroupCrossDirectSize();
     for (final group in calendarGroups) {
+      final indexOfGroup = calendarGroups.indexOf(group);
       for (final e in group.entries) {
         viewBuffer.add(generateCrossFlowItem(
           startDate: e.start,
           endDate: e.end,
           title: group.title,
-          crossDirectionSize: 30,
-          color: Colors.yellow,
-          crossDirectionOffset: group.offset,
+          crossDirectionSize: crossDirectSize,
+          textDirection: 3,
+          color: group.color,
+          crossDirectionOffset:
+              _dataAreaStartOffset + indexOfGroup * (crossDirectSize + padding),
         ));
       }
     }
     return viewBuffer;
+  }
+
+  double _getGroupCrossDirectSize() {
+    return ((_widgetWidth - _dataAreaStartOffset) / calendarGroups.length) -
+        (padding * calendarGroups.length);
   }
 
   List<Widget> _generateBackground() {

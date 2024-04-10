@@ -17,12 +17,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     controller.calendarGroups = [
-      CalendarGroup(200, title: "title", entries: [
-        CalendarEntry(
-            start: DateTime(2024, 4, 1, 5, 20),
-            end: DateTime(2024, 6, 2, 12, 0),
-            title: "title")
-      ])
+      CalendarGroup(
+        title: "title",
+        entries: [
+          CalendarEntry(
+              start: DateTime(2024, 4, 1, 5, 20),
+              end: DateTime(2024, 6, 2, 12, 0),
+              title: "title")
+        ],
+      ),
+      CalendarGroup(
+        title: "Group2",
+        color: Colors.deepOrangeAccent,
+        entries: [
+          CalendarEntry(
+              start: DateTime(2024, 4, 6, 12, 30),
+              end: DateTime(2024, 4, 10, 20, 0),
+              title: "t1"),
+          CalendarEntry(
+              start: DateTime(2024, 4, 11, 0, 30),
+              end: DateTime(2024, 8, 10, 20, 0),
+              title: "t1"),
+        ],
+      )
     ];
     return Scaffold(
         body: InfCal(
