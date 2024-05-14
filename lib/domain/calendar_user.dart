@@ -1,4 +1,4 @@
-import 'dart:io' show HttpServer, Platform;
+import 'dart:io' show HttpServer;
 
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -31,7 +31,9 @@ class CalendarUser extends GetxController {
   final Rx<String?> userName = (null as String?).obs;
 
   googleSignInAndroid() async {
-    final clientIdAndroid = Platform.environment['CLIENT_ID_ANDROID'];
+    const clientIdAndroid = bool.hasEnvironment('CLIENT_ID_ANDROID')
+        ? String.fromEnvironment('CLIENT_ID_ANDROID')
+        : null;
     if (clientIdAndroid == null) {
       throw Exception('CLIENT_ID_ANDROID environment variable is not set');
     }
@@ -95,8 +97,12 @@ class CalendarUser extends GetxController {
   }
 
   Future<oauth2.Client> _getOAuth2Client(Uri redirectUrl) async {
-    final secret = Platform.environment['APP_SECRET_DESKTOP'];
-    final clientIdDesktop = Platform.environment['CLIENT_ID_DESKTOP'];
+    const secret = bool.hasEnvironment('APP_SECRET_DESKTOP')
+        ? String.fromEnvironment('APP_SECRET_DESKTOP')
+        : null;
+    const clientIdDesktop = bool.hasEnvironment('CLIENT_ID_DESKTOP')
+        ? String.fromEnvironment('CLIENT_ID_DESKTOP')
+        : null;
     if (secret == null) {
       throw Exception('APP_SECRET_DESKTOP is not set');
     }
