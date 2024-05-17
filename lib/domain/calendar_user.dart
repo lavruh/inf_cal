@@ -45,6 +45,7 @@ class CalendarUser extends GetxController {
       userName.value = user?.email;
       httpClient = c;
       isLoggedIn.value = true;
+      update();
     }
   }
 
@@ -109,6 +110,7 @@ class CalendarUser extends GetxController {
     if (clientIdDesktop == null) {
       throw Exception('CLIENT_ID_DESKTOP is not set');
     }
+
     var grant = oauth2.AuthorizationCodeGrant(
       clientIdDesktop,
       Uri.parse("https://accounts.google.com/o/oauth2/v2/auth"),
