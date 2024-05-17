@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:inf_cal/domain/calendar_group.dart';
@@ -105,12 +106,13 @@ class InfCalController extends ChangeNotifier {
         viewBuffer.add(generateCrossFlowItem(
           startDate: e.start,
           endDate: e.end,
-          title: group.title,
+          title: e.title,
           crossDirectionSize: crossDirectSize,
-          textDirection: 3,
+          textDirection: 4,
           color: group.color,
           crossDirectionOffset:
               _dataAreaStartOffset + indexOfGroup * (crossDirectSize + padding),
+          useTooltip: true,
         ));
       }
     }
@@ -163,6 +165,7 @@ class InfCalController extends ChangeNotifier {
     int textDirection = 0,
     AlignmentGeometry? alignment,
     Color? color,
+    bool useTooltip = false,
   }) {
     final viewStartDate = _bufferStart!;
     final start =
@@ -182,28 +185,43 @@ class InfCalController extends ChangeNotifier {
         start.difference(viewStartDate).inMicroseconds ~/ durationDivider;
 
     final topPosition = _scroll + daysDiff * scaledHeight + viewStartOffset;
-    final height = (end.difference(start).inMicroseconds ~/ durationDivider) *
+    double height = (end.difference(start).inMicroseconds ~/ durationDivider) *
         scaledHeight;
+
+    if (height < 0) {
+      // print("height $height ,  title $title,"
+      //     "start = $start, end = $end"
+      //     "end.difference(start).inMicroseconds = ${end.difference(start).inMicroseconds}"
+      //     "scaledHeight = $scaledHeight");
+      height = 0;
+    }
+
+    final body = Container(
+      alignment: alignment,
+      decoration: BoxDecoration(
+          color: color,
+          border: const Border(top: BorderSide(color: Colors.black, width: 1))),
+      child: Stack(fit: StackFit.expand, children: [
+        Positioned(
+          top: topPosition < 0 ? -(topPosition) : 0,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight: height, maxWidth: crossDirectionSize ?? 0),
+            child: RotatedBox(
+              quarterTurns: textDirection,
+              child: Text(title, softWrap: true),
+            ),
+          ),
+        ),
+      ]),
+    );
 
     return Positioned(
         top: topPosition,
         left: crossDirectionOffset,
         width: crossDirectionSize,
         height: height,
-        child: Container(
-          alignment: alignment,
-          decoration: BoxDecoration(
-              color: color,
-              border:
-                  const Border(top: BorderSide(color: Colors.black, width: 1))),
-          child: Stack(children: [
-            Positioned(
-              top: topPosition < 0 ? -(topPosition) : 0,
-              child:
-                  RotatedBox(quarterTurns: textDirection, child: Text(title)),
-            ),
-          ]),
-        ));
+        child: useTooltip ? Tooltip(message: title, child: body) : body);
   }
 
   void updateControllerValues() {

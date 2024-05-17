@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inf_cal/data/calendar_repo.dart';
 import 'package:inf_cal/domain/calendar_user.dart';
-import 'package:inf_cal/domain/calendars_state.dart';
+import 'package:inf_cal/domain/calendar_state.dart';
 import 'package:inf_cal/ui/screens/calendar_screen.dart';
 
 void main() async {
