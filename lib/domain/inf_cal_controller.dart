@@ -98,11 +98,17 @@ class InfCalController extends ChangeNotifier {
 
   List<Widget> updateView() {
     List<Widget> viewBuffer = [];
+    final viewStartDate = _bufferStart!;
+    final viewEndDate = _bufferEnd!;
     viewBuffer.addAll(_generateBackground());
     final crossDirectSize = _getGroupCrossDirectSize();
     for (final group in calendarGroups) {
       final indexOfGroup = calendarGroups.indexOf(group);
       for (final e in group.entries) {
+        if (e.end.compareTo(viewStartDate) == -1 ||
+            e.start.compareTo(viewEndDate) == 1) {
+          continue;
+        }
         viewBuffer.add(generateCrossFlowItem(
           startDate: e.start,
           endDate: e.end,
@@ -187,14 +193,7 @@ class InfCalController extends ChangeNotifier {
     final topPosition = _scroll + daysDiff * scaledHeight + viewStartOffset;
     double height = (end.difference(start).inMicroseconds ~/ durationDivider) *
         scaledHeight;
-
-    if (height < 0) {
-      // print("height $height ,  title $title,"
-      //     "start = $start, end = $end"
-      //     "end.difference(start).inMicroseconds = ${end.difference(start).inMicroseconds}"
-      //     "scaledHeight = $scaledHeight");
-      height = 0;
-    }
+    if (height == 0) height = 1;
 
     final body = Container(
       alignment: alignment,
