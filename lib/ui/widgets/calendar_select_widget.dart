@@ -17,6 +17,9 @@ class CalendarSelectWidget extends StatelessWidget {
                       onChanged: (value) => state.toggleGroupSelection(e),
                     ),
                     title: Text(e.title),
+                    trailing: CircleAvatar(
+                      backgroundColor: e.color,
+                    ),
                   ))
               .toList(),
         );

@@ -9,7 +9,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Get.put(CalendarUser.instance);
   final calendarState = Get.put(CalendarState(CalendarRepo()));
-  calendarState.getCalendarGroups();
   runApp(const MyApp());
 }
 
