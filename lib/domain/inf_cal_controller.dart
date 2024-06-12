@@ -114,17 +114,18 @@ class InfCalController extends ChangeNotifier {
           continue;
         }
         viewBuffer.add(generateCrossFlowItem(
-          startDate: e.start,
-          endDate: e.end,
-          title: e.title,
-          crossDirectionSize: crossDirectSize,
-          textDirection: 4,
-          color: group.color,
-          crossDirectionOffset:
-              _dataAreaStartOffset + indexOfGroup * (crossDirectSize + padding),
-          useTooltip: true,
-          calendarId: group.id,
-        ));
+            startDate: e.start,
+            endDate: e.end,
+            title: e.title,
+            crossDirectionSize: crossDirectSize,
+            textDirection: 4,
+            color: group.color,
+            crossDirectionOffset: _dataAreaStartOffset +
+                indexOfGroup * (crossDirectSize + padding),
+            useTooltip: true,
+            tapCallback: () {
+              if (onTap != null) onTap!(e, group.id);
+            }));
       }
     }
     return viewBuffer;
@@ -171,13 +172,13 @@ class InfCalController extends ChangeNotifier {
     required DateTime startDate,
     required DateTime endDate,
     required String title,
-    String? calendarId,
     double? crossDirectionSize,
     double crossDirectionOffset = 0,
     int textDirection = 0,
     AlignmentGeometry? alignment,
     Color? color,
     bool useTooltip = false,
+    void Function()? tapCallback,
   }) {
     final viewStartDate = _bufferStart!;
     final start =
@@ -203,9 +204,10 @@ class InfCalController extends ChangeNotifier {
 
     final body = GestureDetector(
       onTap: () {
-        final fnk = onTap;
-        if (fnk != null) {
-          fnk(CalendarEntry(start: start, end: end, title: title), calendarId);
+        if (tapCallback != null) {
+          tapCallback();
+        } else if (onTap != null) {
+          onTap!(CalendarEntry(start: start, end: end, title: title), null);
         }
       },
       child: Container(
