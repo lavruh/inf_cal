@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:inf_cal/domain/calendar_entry.dart';
 import 'package:inf_cal/domain/calendar_group.dart';
 import 'package:inf_cal/domain/scale_level.dart';
 import 'package:inf_cal/utils/date_extension.dart';
@@ -26,9 +27,12 @@ class InfCalController extends ChangeNotifier {
   final _dataAreaStartOffset = 150;
   final double padding;
 
+  final Function(CalendarEntry entry, String? calendarId)? onTap;
+
   InfCalController({
     this.padding = 10,
     this.calendarGroups = const <CalendarGroup>[],
+    this.onTap,
   });
 
   bool get zoomMode => _zoomMode;
@@ -119,6 +123,7 @@ class InfCalController extends ChangeNotifier {
           crossDirectionOffset:
               _dataAreaStartOffset + indexOfGroup * (crossDirectSize + padding),
           useTooltip: true,
+          calendarId: group.id,
         ));
       }
     }
@@ -166,6 +171,7 @@ class InfCalController extends ChangeNotifier {
     required DateTime startDate,
     required DateTime endDate,
     required String title,
+    String? calendarId,
     double? crossDirectionSize,
     double crossDirectionOffset = 0,
     int textDirection = 0,
@@ -195,24 +201,33 @@ class InfCalController extends ChangeNotifier {
         scaledHeight;
     if (height == 0) height = 1;
 
-    final body = Container(
-      alignment: alignment,
-      decoration: BoxDecoration(
-          color: color,
-          border: const Border(top: BorderSide(color: Colors.black, width: 1))),
-      child: Stack(fit: StackFit.expand, children: [
-        Positioned(
-          top: topPosition < 0 ? -(topPosition) : 0,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: height, maxWidth: crossDirectionSize ?? 0),
-            child: RotatedBox(
-              quarterTurns: textDirection,
-              child: Text(title, softWrap: true),
+    final body = GestureDetector(
+      onTap: () {
+        final fnk = onTap;
+        if (fnk != null) {
+          fnk(CalendarEntry(start: start, end: end, title: title), calendarId);
+        }
+      },
+      child: Container(
+        alignment: alignment,
+        decoration: BoxDecoration(
+            color: color,
+            border:
+                const Border(top: BorderSide(color: Colors.black, width: 1))),
+        child: Stack(fit: StackFit.expand, children: [
+          Positioned(
+            top: topPosition < 0 ? -(topPosition) : 0,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: height, maxWidth: crossDirectionSize ?? 0),
+              child: RotatedBox(
+                quarterTurns: textDirection,
+                child: Text(title, softWrap: true),
+              ),
             ),
           ),
-        ),
-      ]),
+        ]),
+      ),
     );
 
     return Positioned(
