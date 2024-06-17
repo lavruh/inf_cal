@@ -79,12 +79,10 @@ class LocalCalendarService implements CalendarService {
     List<CalendarEntry> entries = [];
     for (final e in cal.data) {
       if (e["type"] != "VEVENT") continue;
-      final start = (e["dtstart"] as IcsDateTime).toDateTime();
-      final dtEnd = e["dtend"];
+      final start = _icsDateToDateTime(e["dtstart"] as IcsDateTime);
+      final dtEnd = _icsDateToDateTime(e["dtend"] as IcsDateTime);
       DateTime? end = start?.add(const Duration(minutes: 30));
-      if (dtEnd != null) {
-        end = (dtEnd as IcsDateTime).toDateTime();
-      }
+      if (dtEnd != null) end = dtEnd;
       if (start == null || end == null) continue;
       entries.add(CalendarEntry(
         id: e["uid"],
@@ -162,6 +160,11 @@ class LocalCalendarService implements CalendarService {
 
   String _dateToIcsDate(DateTime d) {
     return DateFormat("yyyyMMddTHHmmss'Z'").format(d);
+  }
+
+  DateTime? _icsDateToDateTime(IcsDateTime ics) {
+    final d = ics.toDateTime();
+    return d?.toLocal();
   }
 
   Map<String, dynamic> _calendarEntryToIcsEvent(CalendarEntry event) {
