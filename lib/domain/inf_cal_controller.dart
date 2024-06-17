@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:inf_cal/domain/calendar_entry.dart';
@@ -200,7 +199,7 @@ class InfCalController extends ChangeNotifier {
     final topPosition = _scroll + daysDiff * scaledHeight + viewStartOffset;
     double height = (end.difference(start).inMicroseconds ~/ durationDivider) *
         scaledHeight;
-    if (height == 0) height = 1;
+    if (height <= 0) height = 1;
 
     final body = GestureDetector(
       onTap: () {

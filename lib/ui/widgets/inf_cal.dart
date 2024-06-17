@@ -32,7 +32,6 @@ class _InfCalState extends State<InfCal> {
   @override
   Widget build(BuildContext context) {
     controller.determinateViewPortDatesLimits(context: context);
-
     return KeyboardAndMouseEventDetector(
       onScroll: (d) => controller.handleMouseScroll(d),
       onCtrlKey: (b) => controller.zoomMode = b,
@@ -48,9 +47,7 @@ class _InfCalState extends State<InfCal> {
         },
         child: Stack(
           children: [
-            Container(
-              color: Colors.white,
-            ),
+            Container(color: Colors.white),
             ...controller.updateView(),
           ],
         ),
