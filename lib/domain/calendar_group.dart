@@ -16,7 +16,7 @@ class CalendarGroup {
 
   @override
   String toString() {
-    return 'CalendarGroup{title: $title}';
+    return '\nCalendarGroup[$id]{title: $title entries ${entries.length} \n';
   }
 
   @override

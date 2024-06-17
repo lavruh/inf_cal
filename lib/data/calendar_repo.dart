@@ -27,7 +27,9 @@ class CalendarRepo extends ChangeNotifier {
       final dir = await _getAppDataDirectory();
       service = LocalCalendarService(dir);
       dir.watch().listen((onData) {
-        notifyListeners();
+        if (onData.runtimeType != FileSystemModifyEvent) {
+          notifyListeners();
+        }
       });
     }
     notifyListeners();
@@ -72,8 +74,8 @@ class CalendarRepo extends ChangeNotifier {
   updateEvent({
     required String calendarId,
     required CalendarEntry event,
-  }) {
-    service.updateEvent(calendarId, event);
+  }) async {
+    await service.updateEvent(calendarId, event);
   }
 
   createEvent({

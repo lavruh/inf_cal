@@ -41,7 +41,7 @@ class LocalCalendarService implements CalendarService {
       "COLOR": calendar.color.toHex(),
     }, []);
     final f = File(p.join(localDir.path, "${calendar.id}$fileExtension"));
-    f.writeAsString(dataString);
+    await f.writeAsString(dataString);
   }
 
   @override
@@ -55,7 +55,7 @@ class LocalCalendarService implements CalendarService {
     cal.data.insert(idx, icalEvent);
     final dataString = encodeIcalDataString(cal);
     final f = File(p.join(localDir.path, "$calendarId$fileExtension"));
-    f.writeAsString(dataString);
+    await f.writeAsString(dataString, flush: true);
   }
 
   @override
@@ -103,7 +103,7 @@ class LocalCalendarService implements CalendarService {
     cal.data.add(icalEvent);
     final dataString = encodeIcalDataString(cal);
     final f = File(p.join(localDir.path, "$calendarId$fileExtension"));
-    f.writeAsString(dataString);
+    await f.writeAsString(dataString, flush: true);
   }
 
   Future<ICalendar> _getCalendar(String calendarId) async {

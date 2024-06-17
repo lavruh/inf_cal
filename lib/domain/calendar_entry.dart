@@ -13,6 +13,11 @@ class CalendarEntry {
     required this.title,
   }) : id = id ?? const Uuid().v4();
 
+  @override
+  String toString() {
+    return 'CalendarEntry{id: $id, start: $start, end: $end, title: $title}';
+  }
+
   factory CalendarEntry.fromMap(Map<String, dynamic> map) {
     final int start = map['start'];
     final int end = map['end'];
